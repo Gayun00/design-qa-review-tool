@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  /* 멤버십 등급별 커스텀 색상 */
+  --color-membership-silver: #94a3b8;
+  --color-membership-gold: #f59e0b;
+  --color-membership-platinum: #8b5cf6;
+  --color-membership-diamond: #06b6d4;
+
+  /* 커스텀 간격 */
+  --spacing-badge: 6px;
+}
