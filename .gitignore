@@ -1,5 +1,7 @@
 node_modules/
 dist/
 .design-qa/
+.next/
 *.tsbuildinfo
 openspec/
+.design-qa.config.tmp.mjs

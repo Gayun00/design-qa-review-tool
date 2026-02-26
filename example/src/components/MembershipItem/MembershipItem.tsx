@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { MembershipGradeBadge, type BadgeVariant } from '@/components/MembershipGradeBadge';
 import { MembershipGradeInfoModal } from '@/components/MembershipGradeInfoModal';

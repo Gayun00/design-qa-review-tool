@@ -1,9 +1,10 @@
+import { mode } from 'virtual:design-qa-config';
 import type { CommentsStore } from '../types.js';
 
 const STORAGE_KEY = 'design-qa-comments';
 
 export async function fetchComments(): Promise<CommentsStore> {
-  if (__DESIGN_QA_MODE__ === 'dev') {
+  if (mode === 'dev') {
     const res = await fetch('/api/comments');
     return res.json();
   }
@@ -13,7 +14,7 @@ export async function fetchComments(): Promise<CommentsStore> {
 }
 
 export async function saveComments(data: CommentsStore): Promise<void> {
-  if (__DESIGN_QA_MODE__ === 'dev') {
+  if (mode === 'dev') {
     await fetch('/api/comments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

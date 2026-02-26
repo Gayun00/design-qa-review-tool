@@ -14,7 +14,10 @@ export async function dev(cwd: string, options: DevOptions) {
     ...viteConfig,
     server: {
       port: options.port,
-      open: true,
+      fs: {
+        // 호스트 프로젝트 파일에 접근 허용 (root가 packages/ui/ 밖에 있으므로)
+        allow: [cwd, viteConfig.root as string],
+      },
     },
   });
 

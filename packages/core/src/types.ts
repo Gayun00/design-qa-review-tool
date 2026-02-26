@@ -4,10 +4,12 @@ export interface QAConfig {
 }
 
 export interface HostConfig {
-  /** 호스트 프로젝트의 tailwind config 경로 */
-  tailwindConfig: string;
+  /** 호스트 프로젝트의 tailwind config 경로 (v3) 또는 생략 (v4) */
+  tailwindConfig?: string;
   /** 호스트 프로젝트의 tsconfig 경로 */
   tsconfig: string;
+  /** 호스트 프로젝트의 글로벌 CSS 경로 — @theme 등 Tailwind v4 토큰 포함 */
+  globalCss?: string;
   /** 글로벌 decorator (선택) — 스토리북의 preview.tsx에 해당 */
   globalDecorator?: string;
 }

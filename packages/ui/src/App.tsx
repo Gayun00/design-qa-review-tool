@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ReviewItem } from '@design-qa/core';
+import { config } from 'virtual:design-qa-config';
 import { Sidebar } from './components/Sidebar.js';
 import { ReviewPanel } from './components/ReviewPanel.js';
 import { fetchComments, saveComments } from './api/comments.js';
 import type { CommentsStore } from './types.js';
-
-const config = __DESIGN_QA_CONFIG__;
 
 export function App() {
   const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(
@@ -29,8 +28,7 @@ export function App() {
   }, []);
 
   // accepted 카운트 계산
-  const totalStories = config.reviews.reduce((sum, r) => {
-    // stories가 지정된 경우 그 개수, 아니면 일단 1로 카운트 (실제로는 로드 후에야 알 수 있음)
+  const totalStories = config.reviews.reduce((sum: number, r) => {
     return sum + (r.stories?.length ?? 1);
   }, 0);
   const acceptedCount = Object.values(comments).filter(

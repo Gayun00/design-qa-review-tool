@@ -11,6 +11,13 @@ export async function init(cwd: string) {
     'tailwind.config.mjs',
   ]);
   const tsconfig = detectFile(cwd, ['tsconfig.json']);
+  const globalCss = detectFile(cwd, [
+    'src/app/globals.css',
+    'src/styles/globals.css',
+    'src/index.css',
+    'app/globals.css',
+    'styles/globals.css',
+  ]);
   const globalDecorator = detectFile(cwd, [
     '.storybook/preview.tsx',
     '.storybook/preview.ts',
@@ -20,6 +27,9 @@ export async function init(cwd: string) {
 
   if (tailwindConfig) {
     console.log(`  tailwind config 감지: ${tailwindConfig}`);
+  }
+  if (globalCss) {
+    console.log(`  글로벌 CSS 감지: ${globalCss}`);
   }
   if (tsconfig) {
     console.log(`  tsconfig 감지: ${tsconfig}`);
@@ -34,8 +44,9 @@ export async function init(cwd: string) {
     console.log('\n  design-qa.config.ts가 이미 존재합니다. 건너뜁니다.');
   } else {
     const configContent = generateConfig({
-      tailwindConfig: tailwindConfig ?? './tailwind.config.ts',
+      tailwindConfig,
       tsconfig: tsconfig ?? './tsconfig.json',
+      globalCss,
       globalDecorator,
     });
     writeFileSync(configPath, configContent, 'utf-8');
@@ -66,20 +77,28 @@ function detectFile(cwd: string, candidates: string[]): string | null {
 }
 
 function generateConfig(opts: {
-  tailwindConfig: string;
+  tailwindConfig: string | null;
   tsconfig: string;
+  globalCss: string | null;
   globalDecorator: string | null;
 }): string {
-  const globalDecoratorLine = opts.globalDecorator
-    ? `\n    globalDecorator: '${opts.globalDecorator}',`
-    : '';
+  const lines: string[] = [];
+  if (opts.tailwindConfig) {
+    lines.push(`    tailwindConfig: '${opts.tailwindConfig}',`);
+  }
+  lines.push(`    tsconfig: '${opts.tsconfig}',`);
+  if (opts.globalCss) {
+    lines.push(`    globalCss: '${opts.globalCss}',`);
+  }
+  if (opts.globalDecorator) {
+    lines.push(`    globalDecorator: '${opts.globalDecorator}',`);
+  }
 
   return `import type { QAConfig } from '@design-qa/core';
 
 const config: QAConfig = {
   host: {
-    tailwindConfig: '${opts.tailwindConfig}',
-    tsconfig: '${opts.tsconfig}',${globalDecoratorLine}
+${lines.join('\n')}
   },
   reviews: [
     // 에이전트가 알려주거나, 직접 추가
