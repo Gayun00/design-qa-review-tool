@@ -8,4 +8,6 @@ export type {
   Comment,
 } from './types.js';
 
-export { loadConfig } from './config.js';
+export { loadConfig, resolveConfig } from './config.js';
+export { readComments, writeComments } from './comments.js';
+export type { CommentsStore } from './comments.js';

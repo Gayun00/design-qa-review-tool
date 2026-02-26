@@ -1,42 +1,56 @@
 import { useState } from 'react';
-import type { ReviewStatus } from '../types.js';
+import type { ReviewStatus, CommentsStore } from '../types.js';
+import type { CommentData, Comment as QAComment } from '@design-qa/core';
 
 interface CommentThreadProps {
   reviewName: string;
   storyName: string;
+  comments: CommentsStore;
+  onCommentsChange: (comments: CommentsStore) => void;
 }
 
-interface LocalComment {
-  author: string;
-  text: string;
-  timestamp: string;
-}
-
-export function CommentThread({ reviewName, storyName }: CommentThreadProps) {
-  const [status, setStatus] = useState<ReviewStatus>('pending');
-  const [comments, setComments] = useState<LocalComment[]>([]);
+export function CommentThread({
+  reviewName,
+  storyName,
+  comments,
+  onCommentsChange,
+}: CommentThreadProps) {
   const [draft, setDraft] = useState('');
   const [showInput, setShowInput] = useState(false);
 
   const key = `${reviewName}/${storyName}`;
+  const data: CommentData = comments[key] ?? {
+    status: 'pending',
+    comments: [],
+  };
+  const status: ReviewStatus = data.status;
+  const threadComments = data.comments;
+
+  const update = (patch: Partial<CommentData>) => {
+    const updated: CommentsStore = {
+      ...comments,
+      [key]: { ...data, ...patch },
+    };
+    onCommentsChange(updated);
+  };
 
   const handleAccept = () => {
-    setStatus('accepted');
-    console.log(`[Design QA] Accepted: ${key}`);
+    update({ status: 'accepted' });
   };
 
   const handleAddComment = () => {
     if (!draft.trim()) return;
-    const newComment: LocalComment = {
+    const newComment: QAComment = {
       author: 'Reviewer',
       text: draft.trim(),
       timestamp: new Date().toISOString(),
     };
-    setComments((prev) => [...prev, newComment]);
-    setStatus('comment');
+    update({
+      status: 'comment',
+      comments: [...threadComments, newComment],
+    });
     setDraft('');
     setShowInput(false);
-    console.log(`[Design QA] Comment on ${key}: ${newComment.text}`);
   };
 
   return (
@@ -60,19 +74,20 @@ export function CommentThread({ reviewName, storyName }: CommentThreadProps) {
         </button>
         {status === 'comment' && (
           <span className="text-xs text-yellow-600">
-            {comments.length}개 코멘트
+            {threadComments.length}개 코멘트
           </span>
         )}
       </div>
 
-      {comments.map((c, i) => (
+      {threadComments.map((c, i) => (
         <div
           key={i}
           className="bg-yellow-50 border border-yellow-200 rounded-md px-3 py-2 text-sm"
         >
           <p className="text-gray-800">{c.text}</p>
           <p className="text-xs text-gray-400 mt-1">
-            {c.author} &middot; {new Date(c.timestamp).toLocaleString('ko-KR')}
+            {c.author} &middot;{' '}
+            {new Date(c.timestamp).toLocaleString('ko-KR')}
           </p>
         </div>
       ))}

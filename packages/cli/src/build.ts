@@ -9,7 +9,7 @@ export interface BuildOptions {
 
 export async function build(cwd: string, options: BuildOptions) {
   const qaConfig = await loadConfig(cwd);
-  const viteConfig = await createViteConfig(cwd, qaConfig);
+  const viteConfig = await createViteConfig(cwd, qaConfig, { mode: 'build' });
 
   console.log('Design QA 정적 빌드 중...\n');
 

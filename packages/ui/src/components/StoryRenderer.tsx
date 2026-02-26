@@ -3,13 +3,14 @@ import { Component, type ReactNode } from 'react';
 interface StoryRendererProps {
   component: React.ComponentType<Record<string, unknown>>;
   args: Record<string, unknown>;
+  render?: (args: Record<string, unknown>) => ReactNode;
 }
 
-export function StoryRenderer({ component: Comp, args }: StoryRendererProps) {
+export function StoryRenderer({ component: Comp, args, render }: StoryRendererProps) {
   return (
     <ErrorBoundary>
       <div className="border border-gray-200 rounded-lg p-4 bg-white">
-        <Comp {...args} />
+        {render ? render(args) : <Comp {...args} />}
       </div>
     </ErrorBoundary>
   );

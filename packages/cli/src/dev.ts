@@ -8,7 +8,7 @@ export interface DevOptions {
 
 export async function dev(cwd: string, options: DevOptions) {
   const qaConfig = await loadConfig(cwd);
-  const viteConfig = await createViteConfig(cwd, qaConfig);
+  const viteConfig = await createViteConfig(cwd, qaConfig, { mode: 'dev' });
 
   const server = await createServer({
     ...viteConfig,

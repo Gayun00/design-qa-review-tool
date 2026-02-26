@@ -3,18 +3,22 @@ import type { ReviewItem } from '@design-qa/core';
 import { StoryRenderer } from './StoryRenderer.js';
 import { ChildComponentPanel } from './ChildComponentPanel.js';
 import { CommentThread } from './CommentThread.js';
+import type { CommentsStore } from '../types.js';
 
 interface ReviewPanelProps {
   review: ReviewItem;
+  comments: CommentsStore;
+  onCommentsChange: (comments: CommentsStore) => void;
 }
 
-interface StoryEntry {
+export interface StoryEntry {
   name: string;
   component: React.ComponentType<Record<string, unknown>>;
   args: Record<string, unknown>;
+  render?: (args: Record<string, unknown>) => React.ReactNode;
 }
 
-export function ReviewPanel({ review }: ReviewPanelProps) {
+export function ReviewPanel({ review, comments, onCommentsChange }: ReviewPanelProps) {
   const [stories, setStories] = useState<StoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +29,7 @@ export function ReviewPanel({ review }: ReviewPanelProps) {
 
     loadStories(review)
       .then(setStories)
-      .catch((err) => setError(String(err)))
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false));
   }, [review.storyPath]);
 
@@ -51,7 +55,7 @@ export function ReviewPanel({ review }: ReviewPanelProps) {
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+          스토리 로딩 실패: {error}
         </div>
       )}
 
@@ -66,6 +70,7 @@ export function ReviewPanel({ review }: ReviewPanelProps) {
             <StoryRenderer
               component={story.component}
               args={story.args}
+              render={story.render}
             />
 
             {/* 하위 컴포넌트 패널 */}
@@ -81,7 +86,12 @@ export function ReviewPanel({ review }: ReviewPanelProps) {
                 />
               ))}
 
-            <CommentThread reviewName={review.name} storyName={story.name} />
+            <CommentThread
+              reviewName={review.name}
+              storyName={story.name}
+              comments={comments}
+              onCommentsChange={onCommentsChange}
+            />
           </section>
         ))}
     </div>
@@ -91,19 +101,29 @@ export function ReviewPanel({ review }: ReviewPanelProps) {
 async function loadStories(review: ReviewItem): Promise<StoryEntry[]> {
   const mod = await import(/* @vite-ignore */ review.storyPath);
   const meta = mod.default;
-  const component = meta.component;
 
+  if (!meta?.component) {
+    throw new Error(
+      `스토리 파일에 default export (meta.component)가 없습니다: ${review.storyPath}`,
+    );
+  }
+
+  const component = meta.component;
   const entries: StoryEntry[] = [];
 
   for (const [key, value] of Object.entries(mod)) {
     if (key === 'default') continue;
     if (review.stories && !review.stories.includes(key)) continue;
 
-    const story = value as { args?: Record<string, unknown>; render?: Function };
+    const story = value as {
+      args?: Record<string, unknown>;
+      render?: (args: Record<string, unknown>) => React.ReactNode;
+    };
     entries.push({
       name: key,
       component,
       args: story.args ?? {},
+      render: story.render,
     });
   }
 
